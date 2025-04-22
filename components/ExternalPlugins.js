@@ -3,15 +3,18 @@ import { convertInnerUrl } from '@/lib/notion/convertInnerUrl'
 import { isBrowser, loadExternalResource } from '@/lib/utils'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import { GlobalStyle } from './GlobalStyle'
+import { useEffect, useState, lazy, Suspense } from 'react'
+import Head from 'next/head'
+import { useGlobal } from '@/lib/global'
 import { initGoogleAdsense } from './GoogleAdsense'
 
-import Head from 'next/head'
+// 静态导入必要组件
 import ExternalScript from './ExternalScript'
-import WebWhiz from './Webwhiz'
-import { useGlobal } from '@/lib/global'
-import IconFont from './IconFont'
+
+// 动态导入非必要组件
+const GlobalStyle = dynamic(() => import('./GlobalStyle').then(mod => mod.GlobalStyle), { ssr: true })
+const IconFont = dynamic(() => import('./IconFont'), { ssr: false })
+const WebWhiz = dynamic(() => import('./Webwhiz'), { ssr: false })
 
 
 /**
@@ -186,38 +189,80 @@ const ExternalPlugin = props => {
     return null
   }
 
+  // 使用状态来跟踪已加载的组件
+  const [loadedComponents, setLoadedComponents] = useState({})
+
+  // 在组件挂载后动态加载需要的插件
+  useEffect(() => {
+    if (!isBrowser) return
+
+    // 定义要加载的组件及其条件
+    const componentsToLoad = [
+      { name: 'MouseFollow', condition: MOUSE_FOLLOW },
+      { name: 'ThemeSwitch', condition: THEME_SWITCH },
+      { name: 'DebugPanel', condition: DEBUG },
+      { name: 'Ackee', condition: ANALYTICS_ACKEE_TRACKER },
+      { name: 'Gtag', condition: ANALYTICS_GOOGLE_ID },
+      { name: 'Analytics', condition: ANALYTICS_VERCEL, path: '@vercel/analytics/react', exportName: 'Analytics' },
+      { name: 'Busuanzi', condition: ANALYTICS_BUSUANZI_ENABLE },
+      { name: 'FacebookMessenger', condition: FACEBOOK_APP_ID && FACEBOOK_PAGE_ID },
+      { name: 'Fireworks', condition: FIREWORKS },
+      { name: 'Sakura', condition: SAKURA },
+      { name: 'StarrySky', condition: STARRY_SKY },
+      { name: 'Player', condition: MUSIC_PLAYER },
+      { name: 'Nest', condition: NEST },
+      { name: 'FlutteringRibbon', condition: FLUTTERINGRIBBON },
+      { name: 'TwikooCommentCounter', condition: COMMENT_TWIKOO_COUNT_ENABLE, props: true },
+      { name: 'Ribbon', condition: RIBBON },
+      { name: 'DifyChatbot', condition: DIFY_CHATBOT_ENABLED },
+      { name: 'CustomContextMenu', condition: CUSTOM_RIGHT_CLICK_CONTEXT_MENU, props: true },
+      { name: 'DisableCopy', condition: !CAN_COPY },
+      { name: 'AdBlockDetect', condition: AD_WWADS_BLOCK_DETECT },
+      { name: 'TianliGPT', condition: TIANLI_KEY },
+      { name: 'VConsole', condition: true },
+      { name: 'LoadingProgress', condition: ENABLE_NPROGRSS },
+      { name: 'AOSAnimation', condition: true },
+      { name: '51La', condition: ANALYTICS_51LA_ID && ANALYTICS_51LA_CK },
+      { name: 'Coze', condition: COZE_BOT_ID }
+    ]
+
+    // 动态加载组件
+    componentsToLoad.forEach(({ name, condition, path, exportName }) => {
+      if (condition) {
+        const modulePath = path || `@/components/${name}`
+        import(modulePath)
+          .then(module => {
+            const Component = exportName ? module[exportName] : module.default
+            if (Component) {
+              setLoadedComponents(prev => ({ ...prev, [name]: Component }))
+            }
+          })
+          .catch(err => {
+            console.error(`Failed to load component: ${name}`, err)
+          })
+      }
+    })
+  }, [])
+
   return (
     <>
       {/* 全局样式嵌入 */}
       <GlobalStyle />
       {ENABLE_ICON_FONT && <IconFont />}
-      {MOUSE_FOLLOW && <MouseFollow />}
-      {THEME_SWITCH && <ThemeSwitch />}
-      {DEBUG && <DebugPanel />}
-      {ANALYTICS_ACKEE_TRACKER && <Ackee />}
-      {ANALYTICS_GOOGLE_ID && <Gtag />}
-      {ANALYTICS_VERCEL && <Analytics />}
-      {ANALYTICS_BUSUANZI_ENABLE && <Busuanzi />}
-      {FACEBOOK_APP_ID && FACEBOOK_PAGE_ID && <Messenger />}
-      {FIREWORKS && <Fireworks />}
-      {SAKURA && <Sakura />}
-      {STARRY_SKY && <StarrySky />}
-      {MUSIC_PLAYER && <MusicPlayer />}
-      {NEST && <Nest />}
-      {FLUTTERINGRIBBON && <FlutteringRibbon />}
-      {COMMENT_TWIKOO_COUNT_ENABLE && <TwikooCommentCounter {...props} />}
-      {RIBBON && <Ribbon />}
-      {DIFY_CHATBOT_ENABLED && <DifyChatbot />}
-      {CUSTOM_RIGHT_CLICK_CONTEXT_MENU && <CustomContextMenu {...props} />}
-      {!CAN_COPY && <DisableCopy />}
+
+      {/* 动态加载的组件 */}
+      {Object.entries(loadedComponents).map(([name, Component]) => {
+        if (!Component) return null
+
+        // 特殊处理需要props的组件
+        if (name === 'TwikooCommentCounter' || name === 'CustomContextMenu') {
+          return <Component key={name} {...props} />
+        }
+        return <Component key={name} />
+      })}
+
+      {/* 特殊处理的组件 */}
       {WEB_WHIZ_ENABLED && <WebWhiz />}
-      {AD_WWADS_BLOCK_DETECT && <AdBlockDetect />}
-      {TIANLI_KEY && <TianliGPT />}
-      <VConsole />
-      {ENABLE_NPROGRSS && <LoadingProgress />}
-      <AosAnimation />
-      {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && <LA51 />}
-      {COZE_BOT_ID && <Coze />}
 
       {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && (
         <>
@@ -376,7 +421,7 @@ const ExternalPlugin = props => {
           (function() {
             var hm = document.createElement("script");
             hm.src = "https://hm.baidu.com/hm.js?${ANALYTICS_BAIDU_ID}";
-            var s = document.getElementsByTagName("script")[0]; 
+            var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
           })();
           `
@@ -443,75 +488,6 @@ const ExternalPlugin = props => {
   )
 }
 
-const TwikooCommentCounter = dynamic(
-  () => import('@/components/TwikooCommentCounter'),
-  { ssr: false }
-)
-const DebugPanel = dynamic(() => import('@/components/DebugPanel'), {
-  ssr: false
-})
-const ThemeSwitch = dynamic(() => import('@/components/ThemeSwitch'), {
-  ssr: false
-})
-const Fireworks = dynamic(() => import('@/components/Fireworks'), {
-  ssr: false
-})
-const MouseFollow = dynamic(() => import('@/components/MouseFollow'), {
-  ssr: false
-})
-const Nest = dynamic(() => import('@/components/Nest'), { ssr: false })
-const FlutteringRibbon = dynamic(
-  () => import('@/components/FlutteringRibbon'),
-  { ssr: false }
-)
-const Ribbon = dynamic(() => import('@/components/Ribbon'), { ssr: false })
-const Sakura = dynamic(() => import('@/components/Sakura'), { ssr: false })
-const StarrySky = dynamic(() => import('@/components/StarrySky'), {
-  ssr: false
-})
-const DifyChatbot = dynamic(() => import('@/components/DifyChatbot'), {
-  ssr: false
-})
-const Analytics = dynamic(
-  () =>
-    import('@vercel/analytics/react').then(async m => {
-      return m.Analytics
-    }),
-  { ssr: false }
-)
-const MusicPlayer = dynamic(() => import('@/components/Player'), { ssr: false })
-const Ackee = dynamic(() => import('@/components/Ackee'), { ssr: false })
-const Gtag = dynamic(() => import('@/components/Gtag'), { ssr: false })
-const Busuanzi = dynamic(() => import('@/components/Busuanzi'), { ssr: false })
-const Messenger = dynamic(() => import('@/components/FacebookMessenger'), {
-  ssr: false
-})
-const VConsole = dynamic(() => import('@/components/VConsole'), { ssr: false })
-const CustomContextMenu = dynamic(
-  () => import('@/components/CustomContextMenu'),
-  { ssr: false }
-)
-const DisableCopy = dynamic(() => import('@/components/DisableCopy'), {
-  ssr: false
-})
-const AdBlockDetect = dynamic(() => import('@/components/AdBlockDetect'), {
-  ssr: false
-})
-const LoadingProgress = dynamic(() => import('@/components/LoadingProgress'), {
-  ssr: false
-})
-const AosAnimation = dynamic(() => import('@/components/AOSAnimation'), {
-  ssr: false
-})
-
-const Coze = dynamic(() => import('@/components/Coze'), {
-  ssr: false
-})
-const LA51 = dynamic(() => import('@/components/LA51'), {
-  ssr: false
-})
-const TianliGPT = dynamic(() => import('@/components/TianliGPT'), {
-  ssr: false
-})
+// 所有组件都通过动态导入实现了
 
 export default ExternalPlugin

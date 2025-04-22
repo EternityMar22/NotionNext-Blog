@@ -1,12 +1,35 @@
 import BLOG, { LAYOUT_MAPPINGS } from '@/blog.config'
-import * as ThemeComponents from '@theme-components'
-import getConfig from 'next/config'
+// 不再全量导入所有主题组件
+// import * as ThemeComponents from '@theme-components'
+// 只导入当前默认主题的组件
 import dynamic from 'next/dynamic'
+import getConfig from 'next/config'
 import { useRouter } from 'next/router'
 import { getQueryParam, getQueryVariable, isBrowser } from '../lib/utils'
 
 // 在next.config.js中扫描所有主题
 export const { THEMES = [] } = getConfig()?.publicRuntimeConfig || {}
+
+// 默认主题组件缓存
+let defaultThemeComponents = null
+
+/**
+ * 获取默认主题组件
+ * @returns {Promise<object>}
+ */
+const getDefaultThemeComponents = async () => {
+  if (!defaultThemeComponents) {
+    try {
+      // 动态导入默认主题
+      defaultThemeComponents = await import(`@/themes/${BLOG.THEME}`)
+    } catch (error) {
+      console.error(`加载默认主题 ${BLOG.THEME} 失败:`, error)
+      // 如果默认主题加载失败，尝试加载简单主题
+      defaultThemeComponents = await import(`@/themes/heo`)
+    }
+  }
+  return defaultThemeComponents
+}
 
 /**
  * 获取主题配置
@@ -38,7 +61,8 @@ export const getThemeConfig = async themeQuery => {
           console.warn(
             `Loading ${themeName} failed. Falling back to default theme.`
           )
-          return ThemeComponents?.THEME_CONFIG
+          const defaultComponents = await getDefaultThemeComponents()
+          return defaultComponents?.THEME_CONFIG
         }
       } catch (error) {
         // 如果 import 过程中出现异常，返回默认主题配置
@@ -46,13 +70,15 @@ export const getThemeConfig = async themeQuery => {
           `Error loading theme configuration for ${themeName}:`,
           error
         )
-        return ThemeComponents?.THEME_CONFIG
+        const defaultComponents = await getDefaultThemeComponents()
+        return defaultComponents?.THEME_CONFIG
       }
     }
   }
 
   // 如果没有 themeQuery 或 themeQuery 与默认主题相同，返回默认主题配置
-  return ThemeComponents?.THEME_CONFIG
+  const defaultComponents = await getDefaultThemeComponents()
+  return defaultComponents?.THEME_CONFIG
 }
 
 /**
@@ -61,16 +87,24 @@ export const getThemeConfig = async themeQuery => {
  * @returns
  */
 export const getBaseLayoutByTheme = theme => {
-  const LayoutBase = ThemeComponents['LayoutBase']
   const isDefaultTheme = !theme || theme === BLOG.THEME
-  if (!isDefaultTheme) {
+
+  if (isDefaultTheme) {
+    // 动态导入默认主题的LayoutBase
+    return dynamic(
+      async () => {
+        const defaultComponents = await getDefaultThemeComponents()
+        return defaultComponents['LayoutBase']
+      },
+      { ssr: true }
+    )
+  } else {
+    // 动态导入非默认主题的LayoutBase
     return dynamic(
       () => import(`@/themes/${theme}`).then(m => m['LayoutBase']),
       { ssr: true }
     )
   }
-
-  return LayoutBase
 }
 
 /**
@@ -90,10 +124,6 @@ export const DynamicLayout = props => {
  * @returns
  */
 export const getLayoutByTheme = ({ layoutName, theme }) => {
-  // const layoutName = getLayoutNameByPath(router.pathname, router.asPath)
-  const LayoutComponents =
-    ThemeComponents[layoutName] || ThemeComponents.LayoutSlug
-
   const router = useRouter()
   const themeQuery = getQueryParam(router?.asPath, 'theme') || theme
   const isDefaultTheme = !themeQuery || themeQuery === BLOG.THEME
@@ -110,10 +140,18 @@ export const getLayoutByTheme = ({ layoutName, theme }) => {
       () => import(`@/themes/${themeQuery}`).then(m => loadThemeComponents(m)),
       { ssr: true }
     )
+  } else {
+    // 动态导入默认主题的布局组件
+    return dynamic(
+      async () => {
+        const defaultComponents = await getDefaultThemeComponents()
+        const components = defaultComponents[layoutName] || defaultComponents.LayoutSlug
+        setTimeout(fixThemeDOM, 100)
+        return components
+      },
+      { ssr: true }
+    )
   }
-
-  setTimeout(fixThemeDOM, 100)
-  return LayoutComponents
 }
 
 /**
