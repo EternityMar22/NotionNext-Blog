@@ -21,7 +21,7 @@ class MyDocument extends Document {
               // 域名: blog.985864.xyz
               // 路径: fullkaires
               // Site Key: blog985864
-              fullres.src = 'https://blog.985864.xyz/fullkaires/blog985864.js?' + (new Date() - new Date() % 43200000);
+              fullres.src = 'https://fullkaires.985864.xyz/fullkaires/blog985864.js?' + (new Date() - new Date() % 43200000);
 
               // 关键点：添加 siteKeyOverride 属性，其值就是你的 Site Key
               // 确保 fullres.attributes 对象存在
