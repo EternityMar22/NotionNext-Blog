@@ -1,14 +1,11 @@
 import BLOG, { LAYOUT_MAPPINGS } from '@/blog.config'
-// 不再全量导入所有主题组件
-// import * as ThemeComponents from '@theme-components'
-// 只导入当前默认主题的组件
-import dynamic from 'next/dynamic'
 import getConfig from 'next/config'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { getQueryParam, getQueryVariable, isBrowser } from '../lib/utils'
 
-// 在next.config.js中扫描所有主题
-export const { THEMES = [] } = getConfig()?.publicRuntimeConfig || {}
+// 可用主题列表
+const AVAILABLE_THEMES = ['heo', 'magazine', 'proxio']
 
 // 默认主题组件缓存
 let defaultThemeComponents = null
@@ -20,16 +17,21 @@ let defaultThemeComponents = null
 const getDefaultThemeComponents = async () => {
   if (!defaultThemeComponents) {
     try {
+      // 检查默认主题是否在可用主题列表中
+      const themeToLoad = AVAILABLE_THEMES.includes(BLOG.THEME) ? BLOG.THEME : 'heo'
       // 动态导入默认主题
-      defaultThemeComponents = await import(`@/themes/${BLOG.THEME}`)
+      defaultThemeComponents = await import(`@/themes/${themeToLoad}`)
     } catch (error) {
       console.error(`加载默认主题 ${BLOG.THEME} 失败:`, error)
-      // 如果默认主题加载失败，尝试加载简单主题
+      // 如果默认主题加载失败，尝试加载备用主题
       defaultThemeComponents = await import(`@/themes/heo`)
     }
   }
   return defaultThemeComponents
 }
+
+// 在next.config.js中扫描所有主题
+export const { THEMES = [] } = getConfig()?.publicRuntimeConfig || {}
 
 /**
  * 获取主题配置
@@ -44,6 +46,13 @@ export const getThemeConfig = async themeQuery => {
 
     // 如果 themeQuery 不等于当前默认主题，则加载指定主题的配置
     if (themeName !== BLOG.THEME) {
+      // 检查请求的主题是否在可用主题列表中
+      if (!AVAILABLE_THEMES.includes(themeName)) {
+        console.warn(`Theme ${themeName} is not available. Falling back to default theme.`)
+        const defaultComponents = await getDefaultThemeComponents()
+        return defaultComponents?.THEME_CONFIG
+      }
+
       try {
         // 动态导入主题配置
         const THEME_CONFIG = await import(`@/themes/${themeName}`)
@@ -99,6 +108,18 @@ export const getBaseLayoutByTheme = theme => {
       { ssr: true }
     )
   } else {
+    // 检查请求的主题是否在可用主题列表中
+    if (!AVAILABLE_THEMES.includes(theme)) {
+      console.warn(`Theme ${theme} is not available. Falling back to default theme.`)
+      return dynamic(
+        async () => {
+          const defaultComponents = await getDefaultThemeComponents()
+          return defaultComponents['LayoutBase']
+        },
+        { ssr: true }
+      )
+    }
+
     // 动态导入非默认主题的LayoutBase
     return dynamic(
       () => import(`@/themes/${theme}`).then(m => m['LayoutBase']),
@@ -130,6 +151,20 @@ export const getLayoutByTheme = ({ layoutName, theme }) => {
 
   // 加载非当前默认主题
   if (!isDefaultTheme) {
+    // 检查请求的主题是否在可用主题列表中
+    if (!AVAILABLE_THEMES.includes(themeQuery)) {
+      console.warn(`Theme ${themeQuery} is not available. Falling back to default theme.`)
+      return dynamic(
+        async () => {
+          const defaultComponents = await getDefaultThemeComponents()
+          const components = defaultComponents[layoutName] || defaultComponents.LayoutSlug
+          setTimeout(fixThemeDOM, 100)
+          return components
+        },
+        { ssr: true }
+      )
+    }
+
     const loadThemeComponents = componentsSource => {
       const components =
         componentsSource[layoutName] || componentsSource.LayoutSlug

@@ -12,7 +12,7 @@ export const config = {
 }
 
 // 限制登录访问的路由
-// 先定义路由模式，稍后在使用时初始化匹配器
+// 定义路由模式，稍后在使用时初始化匹配器
 const tenantRoutePatterns = [
   '/user/organization-selector(.*)',
   '/user/orgid/(.*)',
@@ -21,7 +21,7 @@ const tenantRoutePatterns = [
 ]
 
 // 限制权限访问的路由
-// 先定义路由模式，稍后在使用时初始化匹配器
+// 定义路由模式，稍后在使用时初始化匹配器
 const tenantAdminRoutePatterns = [
   '/admin/(.*)/memberships',
   '/admin/(.*)/domain'
