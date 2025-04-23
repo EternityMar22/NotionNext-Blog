@@ -18,7 +18,7 @@ class MyDocument extends Document {
               var fullres = document.createElement('script');
               fullres.async = true;
               // 关键点：这里的 src 指向你的 Cloudflare Worker 代理路径，并包含你的 Site Key 作为文件名部分
-              // 域名: blog.985864.xyz
+              // 域名: fullkaires.985864.xyz
               // 路径: fullkaires
               // Site Key: blog985864
               fullres.src = 'https://fullkaires.985864.xyz/fullkaires/blog985864.js?' + (new Date() - new Date() % 43200000);
