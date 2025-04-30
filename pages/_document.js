@@ -4,6 +4,18 @@ import Document, { Head, Html, Main, NextScript } from 'next/document'
 
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
+    // 检查是否是sitemap.xml请求
+    const isSitemap = ctx.pathname === '/sitemap.xml'
+
+    // 如果是sitemap.xml请求，返回空的样式数组
+    if (isSitemap) {
+      return {
+        html: '',
+        head: [],
+        styles: [],
+      }
+    }
+
     const initialProps = await Document.getInitialProps(ctx)
     return { ...initialProps }
   }

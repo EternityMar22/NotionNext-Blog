@@ -173,6 +173,11 @@ const nextConfig = {
           {
             source: '/:path*.html',
             destination: '/:path*'
+          },
+          // 将sitemap.xml请求重写到API路由
+          {
+            source: '/sitemap.xml',
+            destination: '/api/sitemap'
           }
         ]
       },
@@ -194,6 +199,14 @@ const nextConfig = {
                 value:
                   'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
               }
+            ]
+          },
+          {
+            // 确保sitemap.xml的Content-Type正确设置
+            source: '/sitemap.xml',
+            headers: [
+              { key: 'Content-Type', value: 'application/xml; charset=utf-8' },
+              { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=59' }
             ]
           }
         ]

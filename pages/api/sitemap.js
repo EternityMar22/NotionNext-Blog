@@ -1,45 +1,47 @@
-// pages/sitemap.xml.js
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { getGlobalData } from '@/lib/db/getSiteData'
 import { extractLangId, extractLangPrefix } from '@/lib/utils/pageId'
-import { getServerSideSitemap } from 'next-sitemap'
 
-export const getServerSideProps = async ctx => {
-  let fields = []
-  const siteIds = BLOG.NOTION_PAGE_ID.split(',')
+export default async function handler(req, res) {
+  try {
+    let fields = []
+    const siteIds = BLOG.NOTION_PAGE_ID.split(',')
 
-  for (let index = 0; index < siteIds.length; index++) {
-    const siteId = siteIds[index]
-    const id = extractLangId(siteId)
-    const locale = extractLangPrefix(siteId)
-    // 第一个id站点默认语言
-    const siteData = await getGlobalData({
-      pageId: id,
-      from: 'sitemap.xml'
-    })
-    const link = siteConfig(
-      'LINK',
-      siteData?.siteInfo?.link,
-      siteData.NOTION_CONFIG
-    )
-    const localeFields = generateLocalesSitemap(link, siteData.allPages, locale)
-    fields = fields.concat(localeFields)
+    for (let index = 0; index < siteIds.length; index++) {
+      const siteId = siteIds[index]
+      const id = extractLangId(siteId)
+      const locale = extractLangPrefix(siteId)
+      // 第一个id站点默认语言
+      const siteData = await getGlobalData({
+        pageId: id,
+        from: 'sitemap.xml'
+      })
+      const link = siteConfig(
+        'LINK',
+        siteData?.siteInfo?.link,
+        siteData.NOTION_CONFIG
+      )
+      const localeFields = generateLocalesSitemap(link, siteData.allPages, locale)
+      fields = fields.concat(localeFields)
+    }
+
+    fields = getUniqueFields(fields)
+
+    // 生成XML内容
+    const xml = generateSitemapXml(fields)
+
+    // 设置正确的Content-Type和缓存头
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=59')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    
+    // 返回XML内容
+    res.status(200).send(xml)
+  } catch (error) {
+    console.error('Error generating sitemap:', error)
+    res.status(500).json({ error: 'Failed to generate sitemap' })
   }
-
-  fields = getUniqueFields(fields);
-
-  // 设置正确的Content-Type和缓存头
-  ctx.res.setHeader('Content-Type', 'application/xml; charset=utf-8')
-  ctx.res.setHeader(
-    'Cache-Control',
-    'public, max-age=3600, stale-while-revalidate=59'
-  )
-
-  // 确保没有样式注入
-  ctx.res.setHeader('X-Content-Type-Options', 'nosniff')
-
-  return getServerSideSitemap(ctx, fields)
 }
 
 function generateLocalesSitemap(link, allPages, locale) {
@@ -109,17 +111,33 @@ function generateLocalesSitemap(link, allPages, locale) {
 }
 
 function getUniqueFields(fields) {
-  const uniqueFieldsMap = new Map();
+  const uniqueFieldsMap = new Map()
 
   fields.forEach(field => {
-    const existingField = uniqueFieldsMap.get(field.loc);
+    const existingField = uniqueFieldsMap.get(field.loc)
 
     if (!existingField || new Date(field.lastmod) > new Date(existingField.lastmod)) {
-      uniqueFieldsMap.set(field.loc, field);
+      uniqueFieldsMap.set(field.loc, field)
     }
-  });
+  })
 
-  return Array.from(uniqueFieldsMap.values());
+  return Array.from(uniqueFieldsMap.values())
 }
 
-export default () => {}
+function generateSitemapXml(fields) {
+  let urlsXml = ''
+  fields.forEach(field => {
+    urlsXml += `<url>
+  <loc>${field.loc}</loc>
+  <lastmod>${field.lastmod}</lastmod>
+  <changefreq>${field.changefreq}</changefreq>
+  <priority>${field.priority}</priority>
+</url>
+`
+  })
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlsXml}
+</urlset>`
+}
