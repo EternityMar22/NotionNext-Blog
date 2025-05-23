@@ -1,4 +1,5 @@
-import { UserProfile } from '@clerk/nextjs'
+// import { UserProfile } from '@clerk/nextjs'
+
 /**
  * 控制台用户账号面板
  * @returns
@@ -6,19 +7,9 @@ import { UserProfile } from '@clerk/nextjs'
 export default function DashboardUser() {
   const enableClerk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   if (!enableClerk) {
-    return null
+    return <div className='text-center p-4'>用户认证功能已禁用</div>
   }
-  return (
-    <UserProfile
-      appearance={{
-        elements: {
-          cardBox: 'w-full',
-          rootBox: 'w-full'
-        }
-      }}
-      className='bg-blue-300'
-      routing='path'
-      path='/dashboard/user-profile'
-    />
-  )
+
+  // return <UserProfile />
+  return <div className='text-center p-4'>用户认证功能已禁用</div>
 }

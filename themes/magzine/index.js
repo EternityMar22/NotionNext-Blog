@@ -11,7 +11,7 @@ import DashboardHeader from '@/components/ui/dashboard/DashboardHeader'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
-import { SignIn, SignUp } from '@clerk/nextjs'
+// import { SignIn, SignUp } from '@clerk/nextjs'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
@@ -38,6 +38,14 @@ import TagItemMini from './components/TagItemMini'
 import TouchMeCard from './components/TouchMeCard'
 import CONFIG from './config'
 import { Style } from './style'
+import Announcement from './components/Announcement'
+import { BackToTopButton } from './components/BackToTopButton'
+import { Banner } from './components/Banner'
+import { CatalogWidget } from './components/CatalogWidget'
+import { InfoCard } from './components/InfoCard'
+import { Live2D } from './components/Live2D'
+import { SearchInput } from './components/SearchInput'
+import { SideAreaLeft } from './components/SideAreaLeft'
 
 // 主题全局状态
 const ThemeGlobalMagzine = createContext()
@@ -478,11 +486,11 @@ const LayoutSignIn = props => {
     <>
       <div className='grow mt-20'>
         {/* clerk预置表单 */}
-        {enableClerk && (
+        {/* {enableClerk && (
           <div className='flex justify-center py-6'>
             <SignIn />
           </div>
-        )}
+        )} */}
         <div id='article-wrapper'>
           <NotionPage post={post} />
         </div>
@@ -504,11 +512,11 @@ const LayoutSignUp = props => {
     <>
       <div className='grow mt-20'>
         {/* clerk预置表单 */}
-        {enableClerk && (
+        {/* {enableClerk && (
           <div className='flex justify-center py-6'>
             <SignUp />
           </div>
-        )}
+        )} */}
         <div id='article-wrapper'>
           <NotionPage post={post} />
         </div>

@@ -3,7 +3,7 @@ import DarkModeButton from '@/components/DarkModeButton'
 import DashboardButton from '@/components/ui/dashboard/DashboardButton'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+// import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import throttle from 'lodash.throttle'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import CONFIG from '../config'
 import LogoBar from './LogoBar'
 import { MenuBarMobile } from './MenuBarMobile'
 import { MenuItemDrop } from './MenuItemDrop'
+import Link from 'next/link'
 
 /**
  * 顶部导航栏 + 菜单
