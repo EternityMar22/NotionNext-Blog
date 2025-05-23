@@ -17,7 +17,6 @@ import { useRouter } from 'next/router'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import ArticleInfo from './components/ArticleInfo'
 import { ArticleLock } from './components/ArticleLock'
-import BannerFullWidth from './components/BannerFullWidth'
 import CTA from './components/CTA'
 import Catalog from './components/Catalog'
 import CatalogFloat from './components/CatalogFloat'
@@ -25,7 +24,6 @@ import CategoryGroup from './components/CategoryGroup'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import PostBannerGroupByCategory from './components/PostBannerGroupByCategory'
 import PostGroupArchive from './components/PostGroupArchive'
 import PostGroupLatest from './components/PostGroupLatest'
 import PostListPage from './components/PostListPage'
@@ -39,21 +37,16 @@ import TouchMeCard from './components/TouchMeCard'
 import CONFIG from './config'
 import { Style } from './style'
 import Announcement from './components/Announcement'
-import { BackToTopButton } from './components/BackToTopButton'
-import { Banner } from './components/Banner'
-import { CatalogWidget } from './components/CatalogWidget'
 import { InfoCard } from './components/InfoCard'
-import { Live2D } from './components/Live2D'
 import { SearchInput } from './components/SearchInput'
-import { SideAreaLeft } from './components/SideAreaLeft'
 
-// 主题全局状态
+// 主题全局状�?
 const ThemeGlobalMagzine = createContext()
 export const useMagzineGlobal = () => useContext(ThemeGlobalMagzine)
 
 /**
  * 基础布局
- * 采用左右两侧布局，移动端使用顶部导航栏
+ * 采用左右两侧布局，移动端使用顶部导航�?
  * @returns {JSX.Element}
  * @constructor
  */
@@ -83,7 +76,7 @@ const LayoutBase = props => {
             <div
               id='main'
               role='main'
-              className='flex-grow' // 这个类保证 main 区域填满剩余的空白
+              className='flex-grow' // 这个类保�?main 区域填满剩余的空�?
             >
               {children}
             </div>
@@ -141,7 +134,7 @@ const LayoutIndex = props => {
  * @returns
  */
 const LayoutPostList = props => {
-  // 当前筛选的分类或标签
+  // 当前筛选的分类或标�?
   const { category, tag, NOTION_CONFIG } = props
 
   return (
@@ -189,10 +182,10 @@ const LayoutSlug = props => {
   return (
     <>
       <div className='w-full mx-auto max-w-screen-3xl'>
-        {/* 广告位 */}
+        {/* 广告�?*/}
         <WWAds orientation='horizontal' />
 
-        {/* 文章锁 */}
+        {/* 文章�?*/}
         {lock && <ArticleLock validPassword={validPassword} />}
 
         {!lock && (
@@ -228,10 +221,10 @@ const LayoutSlug = props => {
                       </div>
                       {/* 分享 */}
                       <ShareBar post={post} />
-                      {/* 上一篇下一篇 */}
+                      {/* 上一篇下一�?*/}
                       <PostNavAround prev={prev} next={next} />
 
-                      {/* 评论区 */}
+                      {/* 评论�?*/}
                       <Comment frontMatter={post} />
                     </section>
                   </article>
@@ -255,7 +248,7 @@ const LayoutSlug = props => {
                       </div>
                     </section>
 
-                    {/* 最新文章区块 */}
+                    {/* 最新文章区�?*/}
                     <div>
                       <PostGroupLatest {...props} vertical={true} />
                     </div>
@@ -286,7 +279,7 @@ const LayoutSlug = props => {
                   </div>
                 </div>
 
-                {/* 移动端目录 */}
+                {/* 移动端目�?*/}
                 <CatalogFloat {...props} />
               </>
             )}
@@ -341,7 +334,7 @@ const LayoutSearch = props => {
 
   return (
     <div className='max-w-screen-3xl w-full mx-auto'>
-      {/* 搜索导航栏 */}
+      {/* 搜索导航�?*/}
       <div className='py-12'>
         <div className='pb-4 w-full'>{locale.NAV.SEARCH}</div>
         {!currentSearch && (
@@ -526,7 +519,7 @@ const LayoutSignUp = props => {
 }
 
 /**
- * 仪表盘
+ * 仪表�?
  * @param {*} props
  * @returns
  */
@@ -546,7 +539,7 @@ const LayoutDashboard = props => {
           </div>
         </div>
       </div>
-      {/* 仪表盘 */}
+      {/* 仪表�?*/}
       <DashboardHeader />
       <DashboardBody />
     </>
