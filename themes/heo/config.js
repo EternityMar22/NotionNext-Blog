@@ -8,11 +8,7 @@ const CONFIG = {
 
   // 首页顶部通知条滚动内容，如不需要可以留空 []
   HEO_NOTICE_BAR: [
-    { title: '正在修复博客bug...', url: 'https://blog.985864.xyz/' },
-    {
-      title: '即将上线全天候配置系统，敬请期待！',
-      url: 'https://blog.985864.xyz/'
-    },
+    { title: '全天候资产配置已上线！', url: 'https://assetinsights.985864.xyz' },
     { title: '希望您天天开心', url: 'https://blog.985864.xyz/' }
   ],
 
