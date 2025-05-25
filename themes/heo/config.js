@@ -55,7 +55,7 @@ const CONFIG = {
   HEO_INFO_CARD_URL2: 'https://github.com/EternityMar22',
   HEO_INFO_CARD_ICON2: 'fab fa-github',
   HEO_INFO_CARD_URL3: 'https://x.com/Ambitio66298056',
-  HEO_INFO_CARD_TEXT3: '了解更多',
+  HEO_INFO_CARD_ICON3: 'fab fa-x-twitter',
 
   // 用户技能图标
   HEO_GROUP_ICONS: [
