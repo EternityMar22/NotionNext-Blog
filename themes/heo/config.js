@@ -8,8 +8,9 @@ const CONFIG = {
 
   // 首页顶部通知条滚动内容，如不需要可以留空 []
   HEO_NOTICE_BAR: [
-    { title: '全天候资产配置已上线！', url: 'https://assetinsights.985864.xyz' },
-    { title: '希望您天天开心', url: 'https://blog.985864.xyz/' }
+    { title: '未来十年新域名kaitp.com', url: 'https://blog.kaitp.com/' },
+    { title: '全天候资产配置已上线！', url: 'https://assetinsights.kaitp.com' },
+    { title: '希望您天天开心', url: 'https://blog.kaitp.com/' }
   ],
 
   // 英雄区左右侧组件颠倒位置
@@ -20,11 +21,11 @@ const CONFIG = {
   // 英雄区(首页顶部大卡)
   HEO_HERO_TITLE_1: '分享金融',
   HEO_HERO_TITLE_2: '技术与新兴趋势',
-  HEO_HERO_TITLE_3: 'BLOG.985864.XYZ',
+  HEO_HERO_TITLE_3: 'BLOG.KAITP.COM',
   HEO_HERO_TITLE_4: 'Kai金融时报',
   HEO_HERO_TITLE_5: '每日更新全球资产报告 市场消息与独立观点',
   HEO_HERO_TITLE_LINK:
-    'https://blog.985864.xyz/category/%E9%87%91%E8%9E%8D%E6%97%B6%E6%8A%A5',
+    'https://blog.kaitp.com/category/%E9%87%91%E8%9E%8D%E6%97%B6%E6%8A%A5',
   // 英雄区遮罩文字
   HEO_HERO_COVER_TITLE: '随意逛逛',
 
@@ -55,7 +56,7 @@ const CONFIG = {
   HEO_INFO_CARD_URL2: 'https://github.com/EternityMar22',
   HEO_INFO_CARD_ICON2: 'fab fa-github',
   HEO_INFO_CARD_URL3: 'https://x.com/Ambitio66298056',
-  HEO_INFO_CARD_ICON3: 'fab fa-x-twitter',
+  HEO_INFO_CARD_ICON3: '了解更多',
 
   // 用户技能图标
   HEO_GROUP_ICONS: [
